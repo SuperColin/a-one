@@ -3,183 +3,252 @@
 <head>
 <meta charset="UTF-8">
 <title>A-One.no — Site Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg-main: #f8fafc;
+    --card-bg: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    
+    /* Indigo Hierarchy Palette */
+    --color-root: hsl(250, 40%, 15%);     /* Deepest */
+    --color-main: hsl(250, 30%, 40%);     /* Strong */
+    --color-sub: hsl(250, 20%, 65%);      /* Mid */
+    --color-prop: hsl(250, 15%, 85%);     /* Light */
+    --color-util: hsl(250, 10%, 95%);     /* Very Light */
+    
+    --color-error: #ef4444;
+    --color-redirect: #f59e0b;
+    
+    --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   body {
     margin: 0;
-    padding: 32px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    background: #f4f1ec;
-    color: #1f1f1f;
+    padding: 40px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(250, 30%, 90%, 0.15) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(250, 20%, 90%, 0.1) 0, transparent 50%);
+    color: var(--text-primary);
+    line-height: 1.5;
   }
+
+  header {
+    max-width: 1400px;
+    margin: 0 auto 32px auto;
+  }
+
   h1 {
-    font-weight: 400;
-    font-size: 28px;
-    margin: 0 0 4px 0;
-    letter-spacing: 0.5px;
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+    color: var(--color-root);
   }
+
   .subtitle {
-    font-size: 14px;
-    color: #6b6b6b;
+    font-size: 16px;
+    color: var(--text-secondary);
     margin-bottom: 24px;
   }
+
+  .controls-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
   .legend {
     display: flex;
-    gap: 18px;
+    gap: 20px;
     flex-wrap: wrap;
-    font-size: 12px;
-    margin-bottom: 14px;
-    color: #444;
   }
-  .legend span {
-    display: inline-flex;
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
     align-items: center;
     gap: 6px;
   }
-  .legend i {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    border: 1px solid #999;
-  }
-  .hint {
-    font-size: 12px;
-    color: #6b6b6b;
-    margin-bottom: 18px;
-    font-style: italic;
-  }
-  .svg-wrap {
-    background: #ffffff;
-    border: 1px solid #e1ddd4;
-    border-radius: 6px;
-    padding: 10px;
-    overflow: auto;
-  }
-  svg { display: block; width: 100%; height: auto; }
 
-  /* ===== Tooltip styling ===== */
+  .svg-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    overflow: auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative; /* Context for tooltip if moved inside */
+  }
+
+  .sitemap-svg { 
+    display: block; 
+    width: 100%; 
+    height: auto; 
+    min-width: 1200px;
+  }
+
+  .hint svg {
+    width: 14px !important;
+    height: 14px !important;
+    min-width: auto !important;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  /* ===== Tooltip ===== */
   .tooltip {
-    position: absolute;
-    background: #1a1a1a;
-    color: #ffffff;
-    padding: 8px 12px;
-    border-radius: 4px;
+    position: fixed; /* Changed to fixed to avoid scroll parent issues */
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 500;
     pointer-events: none;
-    white-space: nowrap;
-    z-index: 1000;
+    z-index: 9999; /* Max priority */
     opacity: 0;
-    transition: opacity 0.18s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transform: translateY(5px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.1);
   }
 
   .tooltip.visible {
     opacity: 1;
+    transform: translateY(0);
   }
 
-  /* ===== Clickable node styling ===== */
+  /* ===== SVG Node Styling ===== */
   a.node {
     cursor: pointer;
-    text-decoration: none;
     outline: none;
+    text-decoration: none;
   }
+
   a.node rect {
-    transition: transform 0.18s ease, filter 0.18s ease, stroke-width 0.18s ease, fill 0.18s ease;
+    transition: var(--transition-base);
     transform-box: fill-box;
     transform-origin: center;
   }
-  a.node text {
-    pointer-events: none;
-    transition: fill 0.18s ease;
-  }
 
-  /* Hover: lift, brighten, thicker stroke */
   a.node:hover rect {
-    filter: brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,0.18));
+    filter: brightness(1.05) saturate(1.1);
+    transform: scale(1.02);
     stroke-width: 2.5;
-    transform: scale(1.025);
-  }
-  a.node:focus-visible rect {
-    stroke: #c9a86a;
-    stroke-width: 3;
   }
 
-  /* Specific hover hue tweaks for the lighter palette so text stays readable */
-  a.node.is-prop:hover rect {
-    fill: #d8c8a8;
-  }
-  a.node.is-util:hover rect {
-    fill: #f3eee2;
-    stroke: #8a8273;
-  }
-  a.node.is-sub:hover rect {
-    fill: #8e9e96;
-  }
-  a.node.is-main:hover rect {
-    fill: #4d6157;
-  }
-  a.node.is-root:hover rect {
-    fill: #2a2a2a;
-  }
+  /* Specific level hover color overrides to keep theme consistent */
+  a.node.is-root:hover rect { fill: hsl(250, 40%, 20%); }
+  a.node.is-main:hover rect { fill: hsl(250, 30%, 45%); }
+  a.node.is-sub:hover rect { fill: hsl(250, 20%, 70%); }
+  a.node.is-prop:hover rect { fill: hsl(250, 15%, 90%); }
+  a.node.is-util:hover rect { fill: hsl(250, 10%, 98%); }
 
-  /* 404 / Error status boxes */
-  a.node.is-error rect {
-    fill: #d32f2f;
-    stroke: #b71c1c;
-  }
-  a.node.is-error text {
-    fill: #ffffff;
-  }
-  a.node.is-error:hover rect {
-    fill: #f44336;
-    filter: brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,0.25));
-  }
+  a.node.is-error:hover rect { fill: #ef4444; filter: brightness(1.1); }
+  a.node.is-redirect:hover rect { fill: #f59e0b; filter: brightness(1.1); }
 
-  /* 301 / Redirect status boxes */
-  a.node.is-redirect rect {
-    fill: #ff9800;
-    stroke: #f57c00;
-  }
-  a.node.is-redirect text {
-    fill: #ffffff;
-  }
-  a.node.is-redirect:hover rect {
-    fill: #ffb74d;
-    filter: brightness(1.12) drop-shadow(0 4px 8px rgba(0,0,0,0.25));
-  }
+  /* Base states for status-specific nodes */
+  a.node.is-error rect { fill: var(--color-error); stroke: #b91c1c; }
+  a.node.is-redirect rect { fill: var(--color-redirect); stroke: #b45309; }
+  a.node.is-error text, a.node.is-redirect text { fill: #ffffff; }
+
 </style>
 </head>
 <body>
-  <h1><strong>A-One.no</strong></h1>
-  <div class="legend">
-    <span><i style="background:#1a1a1a"></i> Rot / Startside</span>
-    <span><i style="background:#3d4f47"></i> Hovedseksjon</span>
-    <span><i style="background:#7a8a82"></i> Underside</span>
-    <span><i style="background:#c8b89a"></i> Eiendom / Annonse</span>
-    <span><i style="background:#e8e3d8;border-color:#b5ad9a"></i> Frittstående / Verktøy</span>
-    <span><i style="background:#ff9800;border-color:#f57c00"></i> 301 - Omdirigering</span>
-    <span><i style="background:#d32f2f;border-color:#b71c1c"></i> 404 - Finnes ikke</span>
-  </div>
-  <div class="hint">↗ Klikk på en boks for å åpne siden i en ny fane</div>
+  <header>
+    <h1>A-One.no Sitemap</h1>
+    <div class="subtitle">En visuell oversikt over nettstedets struktur og hierarki.</div>
+    
+    <div class="controls-wrapper">
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--color-root)"></div>
+          <span>Rot / Startside</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--color-main)"></div>
+          <span>Hovedseksjon</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--color-sub)"></div>
+          <span>Underside</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--color-prop)"></div>
+          <span>Eiendom / Annonse</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--color-util)"></div>
+          <span>Frittstående</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--color-redirect)"></div>
+          <span>301 Omdirigering</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--color-error)"></div>
+          <span>404 Finnes ikke</span>
+        </div>
+      </div>
+      
+      <div class="hint">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        Klikk boks for å åpne side
+      </div>
+    </div>
+  </header>
 
   <div class="tooltip" id="tooltip"></div>
 
-  <div class="svg-wrap">
-<svg viewBox="0 0 2200 2400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif">
+  <div class="svg-container">
+<svg class="sitemap-svg" viewBox="0 0 2200 2400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif">
   <defs>
     <style>
-      .node-root  { fill: #1a1a1a; stroke: #1a1a1a; }
-      .node-main  { fill: #3d4f47; stroke: #2c3a34; }
-      .node-sub   { fill: #7a8a82; stroke: #5d6d65; }
-      .node-prop  { fill: #c8b89a; stroke: #a89878; }
-      .node-util  { fill: #e8e3d8; stroke: #b5ad9a; }
+      .node-root  { fill: var(--color-root); stroke: var(--color-root); }
+      .node-main  { fill: var(--color-main); stroke: #1e1b4b; }
+      .node-sub   { fill: var(--color-sub); stroke: #4338ca; }
+      .node-prop  { fill: var(--color-prop); stroke: #a5b4fc; }
+      .node-util  { fill: var(--color-util); stroke: #e2e8f0; }
       .label-light { fill: #ffffff; font-size: 13px; font-weight: 500; }
-      .label-dark  { fill: #1f1f1f; font-size: 13px; font-weight: 500; }
+      .label-dark  { fill: #1e293b; font-size: 13px; font-weight: 500; }
       .label-small { font-size: 11px; }
-      .group-frame { fill: none; stroke: #c9c2b3; stroke-width: 1; stroke-dasharray: 4 4; }
-      .group-title { fill: #6b6b6b; font-size: 13px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
-      .edge { stroke: #b8b0a0; stroke-width: 1.4; fill: none; }
+      .group-frame { fill: none; stroke: var(--border-color); stroke-width: 1.5; stroke-dasharray: 6 4; }
+      .group-title { fill: var(--text-secondary); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+      .edge { stroke: #cbd5e1; stroke-width: 1.5; fill: none; }
     </style>
   </defs>
 
@@ -612,6 +681,23 @@
     const tooltip = document.getElementById('tooltip');
     const nodes = document.querySelectorAll('a.node');
 
+    const updateTooltipPosition = (e) => {
+      // Using clientX/Y since position is fixed
+      const x = e.clientX + 15;
+      const y = e.clientY + 15;
+      
+      const tooltipWidth = tooltip.offsetWidth;
+      const windowWidth = window.innerWidth;
+      
+      let finalX = x;
+      if (x + tooltipWidth > windowWidth - 20) {
+        finalX = e.clientX - tooltipWidth - 15;
+      }
+
+      tooltip.style.left = `${finalX}px`;
+      tooltip.style.top = `${y}px`;
+    };
+
     nodes.forEach(node => {
       const url = node.getAttribute('href');
       
@@ -621,20 +707,12 @@
         updateTooltipPosition(e);
       });
 
-      node.addEventListener('mousemove', (e) => {
-        updateTooltipPosition(e);
-      });
+      node.addEventListener('mousemove', updateTooltipPosition);
 
       node.addEventListener('mouseleave', () => {
         tooltip.classList.remove('visible');
       });
     });
-
-    function updateTooltipPosition(e) {
-      const offset = 10;
-      tooltip.style.left = (e.pageX + offset) + 'px';
-      tooltip.style.top = (e.pageY + offset) + 'px';
-    }
   </script>
 </body>
 </html>
