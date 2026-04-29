@@ -95,11 +95,7 @@
   }
 
   .hint {
-    font-size: 13px;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: none;
   }
 
   .svg-container {
@@ -117,14 +113,6 @@
     width: 100%; 
     height: auto; 
     min-width: 1200px;
-  }
-
-  .hint svg {
-    width: 14px !important;
-    height: 14px !important;
-    min-width: auto !important;
-    display: inline-block;
-    vertical-align: middle;
   }
 
   /* ===== Tooltip ===== */
@@ -185,6 +173,26 @@
   a.node.is-error rect { fill: var(--color-error); stroke: #b91c1c; }
   a.node.is-redirect rect { fill: var(--color-redirect); stroke: #b45309; }
   a.node.is-error text, a.node.is-redirect text { fill: #ffffff; }
+
+  /* currentColor for ext-link icon, by node type */
+  a.node.is-sub,
+  a.node.is-prop,
+  a.node.is-util { color: rgba(15, 23, 42, 0.55); }
+
+  a.node.is-root,
+  a.node.is-main,
+  a.node.is-error,
+  a.node.is-redirect { color: rgba(255, 255, 255, 0.8); }
+
+  a.node .ext-link-icon {
+    opacity: 0;
+    transition: opacity 0.1s;
+    pointer-events: none;
+  }
+
+  a.node:hover .ext-link-icon {
+    opacity: 1;
+  }
 
 </style>
 </head>
@@ -704,9 +712,47 @@
       tooltip.style.top = `${y}px`;
     };
 
+    // Inject external-link icon into every SVG node
+    const svgNS = 'http://www.w3.org/2000/svg';
+    nodes.forEach(node => {
+      const rect = node.querySelector('rect');
+      if (!rect) return;
+
+      const rx = parseFloat(rect.getAttribute('x'));
+      const ry = parseFloat(rect.getAttribute('y'));
+      const rw = parseFloat(rect.getAttribute('width'));
+      const rh = parseFloat(rect.getAttribute('height'));
+
+      const iconSize = 18;
+      const pad = 7;
+      const ix = rx + rw - iconSize - pad;
+      const iy = ry + (rh - iconSize) / 2;
+      const scale = iconSize / 24;
+
+      const g = document.createElementNS(svgNS, 'g');
+      g.classList.add('ext-link-icon');
+      g.setAttribute('transform', `translate(${ix},${iy}) scale(${scale})`);
+      g.setAttribute('fill', 'none');
+      g.setAttribute('stroke', 'currentColor');
+      g.setAttribute('stroke-width', '2');
+      g.setAttribute('stroke-linecap', 'round');
+      g.setAttribute('stroke-linejoin', 'round');
+
+      const p = document.createElementNS(svgNS, 'path');
+      p.setAttribute('d', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6');
+      const pl = document.createElementNS(svgNS, 'polyline');
+      pl.setAttribute('points', '15 3 21 3 21 9');
+      const ln = document.createElementNS(svgNS, 'line');
+      ln.setAttribute('x1', '10'); ln.setAttribute('y1', '14');
+      ln.setAttribute('x2', '21'); ln.setAttribute('y2', '3');
+
+      g.appendChild(p); g.appendChild(pl); g.appendChild(ln);
+      node.appendChild(g);
+    });
+
     nodes.forEach(node => {
       const url = node.getAttribute('href');
-      
+
       node.addEventListener('mouseenter', (e) => {
         tooltip.textContent = url;
         tooltip.classList.add('visible');
