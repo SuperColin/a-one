@@ -1,65 +1,137 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect } from 'react';
+import SitemapSVG from '@/components/SitemapSVG';
+
+export default function SitemapPage() {
+  useEffect(() => {
+    const tooltip = document.getElementById('tooltip')!;
+    const nodes = document.querySelectorAll<SVGAElement>('a.node');
+    const svgNS = 'http://www.w3.org/2000/svg';
+
+    // Route clicks to the review page
+    nodes.forEach(node => {
+      node.addEventListener('click', e => {
+        e.preventDefault();
+        const href = node.getAttribute('href');
+        if (href) window.open(`/review?page=${encodeURIComponent(href)}`, '_blank');
+      });
+    });
+
+    // Tooltip
+    const moveTooltip = (e: MouseEvent) => {
+      const x = e.clientX + 15;
+      const y = e.clientY + 15;
+      const w = tooltip.offsetWidth;
+      tooltip.style.left = `${x + w > window.innerWidth - 20 ? e.clientX - w - 15 : x}px`;
+      tooltip.style.top = `${y}px`;
+    };
+    nodes.forEach(node => {
+      const url = node.getAttribute('href') ?? '';
+      node.addEventListener('mouseenter', e => {
+        tooltip.textContent = url;
+        tooltip.classList.add('visible');
+        moveTooltip(e as MouseEvent);
+      });
+      node.addEventListener('mousemove', e => moveTooltip(e as MouseEvent));
+      node.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+    });
+
+    // Inject ext-link icon into each node
+    nodes.forEach(node => {
+      const rect = node.querySelector('rect');
+      if (!rect) return;
+      const rx = parseFloat(rect.getAttribute('x')!);
+      const ry = parseFloat(rect.getAttribute('y')!);
+      const rw = parseFloat(rect.getAttribute('width')!);
+      const rh = parseFloat(rect.getAttribute('height')!);
+      const size = 18;
+      const g = document.createElementNS(svgNS, 'g');
+      g.classList.add('ext-link-icon');
+      g.setAttribute('transform', `translate(${rx + rw - size - 7},${ry + (rh - size) / 2}) scale(${size / 24})`);
+      g.setAttribute('fill', 'none');
+      g.setAttribute('stroke', 'currentColor');
+      g.setAttribute('stroke-width', '2');
+      g.setAttribute('stroke-linecap', 'round');
+      g.setAttribute('stroke-linejoin', 'round');
+      const p = document.createElementNS(svgNS, 'path');
+      p.setAttribute('d', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6');
+      const pl = document.createElementNS(svgNS, 'polyline');
+      pl.setAttribute('points', '15 3 21 3 21 9');
+      const ln = document.createElementNS(svgNS, 'line');
+      ln.setAttribute('x1', '10'); ln.setAttribute('y1', '14');
+      ln.setAttribute('x2', '21'); ln.setAttribute('y2', '3');
+      g.append(p, pl, ln);
+      node.appendChild(g);
+    });
+
+    // Fetch noted pages and paint blue dots
+    fetch('/api/notes')
+      .then(r => r.json())
+      .then((notedUrls: string[]) => {
+        const noted = new Set(notedUrls);
+        nodes.forEach(node => {
+          if (!noted.has(node.getAttribute('href') ?? '')) return;
+          const rect = node.querySelector('rect');
+          if (!rect) return;
+          const rx = parseFloat(rect.getAttribute('x')!);
+          const ry = parseFloat(rect.getAttribute('y')!);
+          const rh = parseFloat(rect.getAttribute('height')!);
+          const dot = document.createElementNS(svgNS, 'circle');
+          dot.setAttribute('cx', String(rx + 10));
+          dot.setAttribute('cy', String(ry + rh / 2));
+          dot.setAttribute('r', '5');
+          dot.setAttribute('fill', '#3b82f6');
+          dot.setAttribute('stroke', '#ffffff');
+          dot.setAttribute('stroke-width', '1.5');
+          node.appendChild(dot);
+        });
+      });
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <>
+      <div id="tooltip" className="tooltip" />
+      <div style={{
+        margin: 0,
+        padding: '40px',
+        backgroundColor: 'var(--bg-main)',
+        backgroundImage:
+          'radial-gradient(at 0% 0%, hsla(250,30%,90%,0.15) 0,transparent 50%),' +
+          'radial-gradient(at 50% 0%, hsla(250,20%,90%,0.1) 0,transparent 50%)',
+        color: 'var(--text-primary)',
+        lineHeight: '1.5',
+      }}>
+        <header style={{ maxWidth: '1400px', margin: '0 auto 32px auto' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: '0 0 8px 0', letterSpacing: '-0.02em', color: 'var(--color-root)' }}>
+            A-One.no Sitemap
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <div style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            En visuell oversikt over nettstedets struktur og hierarki.
+          </div>
+          <div className="controls-wrapper">
+            <div className="legend">
+              {[
+                ['var(--color-root)',      'Rot / Startside'],
+                ['var(--color-main)',      'Hovedseksjon'],
+                ['var(--color-sub)',       'Underside'],
+                ['var(--color-prop)',      'Eiendom / Annonse'],
+                ['var(--color-util)',      'Frittstående'],
+                ['var(--color-redirect)',  '301 Omdirigering'],
+                ['var(--color-error)',     '404 Finnes ikke'],
+              ].map(([bg, label]) => (
+                <div key={label} className="legend-item">
+                  <div className="legend-color" style={{ background: bg }} />
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </header>
+        <div className="svg-container">
+          <SitemapSVG />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
